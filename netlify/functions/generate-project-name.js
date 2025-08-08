@@ -25,14 +25,13 @@ function getClientIP(event) {
          'unknown';
 }
 
-// Check daily request limit
-async function checkDailyLimit(userIP) {
+// Check daily request limit (global - 10 requests total per day)
+async function checkDailyLimit() {
   const today = new Date().toISOString().split('T')[0];
   
   const { data, error } = await supabase
     .from('form_submissions')
     .select('id')
-    .eq('user_ip', userIP)
     .gte('created_at', `${today}T00:00:00.000Z`)
     .lt('created_at', `${today}T23:59:59.999Z`);
   
@@ -154,14 +153,14 @@ exports.handler = async (event, context) => {
       };
     }
     
-    // Check daily limit
-    const limitExceeded = await checkDailyLimit(userIP);
+    // Check daily limit (global - 10 requests total per day)
+    const limitExceeded = await checkDailyLimit();
     if (limitExceeded) {
       return {
         statusCode: 200,
         body: JSON.stringify({ 
           limitExceeded: true,
-          message: 'Przekroczono limit 10 żądań dziennie'
+          message: 'Przekroczono dzienny limit 10 żądań dla wszystkich użytkowników'
         })
       };
     }
