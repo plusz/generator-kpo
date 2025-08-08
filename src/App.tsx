@@ -23,6 +23,11 @@ function App() {
 
   // Helper function to convert URLs in text to clickable links
   const convertLinksToHTML = (text: string): string => {
+    // If text already contains HTML links, return as is
+    if (text.includes('<a href=')) {
+      return text;
+    }
+    // Otherwise, convert plain URLs to links
     const urlRegex = /(https?:\/\/[^\s]+)/g;
     return text.replace(urlRegex, '<a href="$1" target="_blank" rel="noopener noreferrer">$1</a>');
   };
