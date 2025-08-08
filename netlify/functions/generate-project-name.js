@@ -66,18 +66,13 @@ async function saveSubmission(formData, userIP) {
 // Generate project name using Perplexity AI
 async function generateProjectName(rodzajDzialalnosci) {
   const prompt = `Proszę wygeneruj profesjonalną i poważnie brzmiącą nazwę projektu modernizacji mojej działalności ${rodzajDzialalnosci}, która będzie skierowana na pozyskanie środków z Krajowego Planu Odbudowy (KPO). Nazwa powinna uwzględniać:
-
 podniesienie odporności firmy na ryzyka i kryzysy,
-
 wdrożenie ekologicznych i energooszczędnych rozwiązań,
-
 innowacje i cyfrową transformację,
-
 zgodność z kluczowymi priorytetami KPO,
-
 poprawę efektywności i jakości usług lub produktów,
-
-Nazwa projektu ma zaczynać się od frazy „Transformacja działalności poprzez rozwój i zakup..." i mieć formę rozbudowanego, wielolinijkowego sformułowania (minimum 6 linijek). Proszę o profesjonalny i korporacyjny styl.`;
+Nazwa projektu ma zaczynać się od frazy „Transformacja działalności poprzez rozwój i zakup..." i mieć formę rozbudowanego, wielolinijkowego sformułowania (minimum 6 linijek). Proszę o profesjonalny i korporacyjny styl.
+Nie dodawaj cytatów, ani innych tekstów poza nazwą projektu. W nazwie uwzględnij rodzaj działalności i kod PKD.`;
 
   try {
     const response = await fetch('https://api.perplexity.ai/chat/completions', {
@@ -87,7 +82,7 @@ Nazwa projektu ma zaczynać się od frazy „Transformacja działalności poprze
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        model: 'sonar-medium-online',
+        model: 'sonar-pro',
         messages: [
           {
             role: 'user',
@@ -100,14 +95,22 @@ Nazwa projektu ma zaczynać się od frazy „Transformacja działalności poprze
     });
 
     if (!response.ok) {
-      throw new Error(`Perplexity API error: ${response.status}`);
+      const errorText = await response.text();
+      console.error(`Perplexity API error: ${response.status} - ${errorText}`);
+      throw new Error(`Perplexity API error: ${response.status} - ${errorText}`);
     }
 
     const data = await response.json();
+    
+    if (!data.choices || !data.choices[0] || !data.choices[0].message) {
+      console.error('Invalid response structure from Perplexity API:', data);
+      throw new Error('Invalid response from Perplexity API');
+    }
+    
     return data.choices[0].message.content;
   } catch (error) {
     console.error('Error calling Perplexity API:', error);
-    throw new Error('Błąd generowania nazwy projektu');
+    throw new Error(`Błąd generowania nazwy projektu: ${error.message}`);
   }
 }
 
