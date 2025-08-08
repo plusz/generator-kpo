@@ -1,4 +1,5 @@
 const { createClient } = require('@supabase/supabase-js');
+const crypto = require('crypto');
 
 const supabaseUrl = process.env.REACT_APP_SUPABASE_URL;
 const supabaseKey = process.env.REACT_APP_SUPABASE_ANON_KEY;
@@ -17,12 +18,40 @@ function isValidPostalCode(postalCode) {
   return /^[0-9]{2}-[0-9]{3}$/.test(postalCode);
 }
 
+// Generate control sum from user data
+function generateControlSum(formData) {
+  const dataString = `${formData.rodzajDzialalnosci}|${formData.pkdCode}|${formData.postalCode}|${formData.politicalConnections}`;
+  return crypto.createHash('sha256').update(dataString).digest('hex');
+}
+
 // Get client IP address
 function getClientIP(event) {
   return event.headers['x-forwarded-for'] || 
          event.headers['x-real-ip'] || 
          event.connection?.remoteAddress || 
          'unknown';
+}
+
+// Check for cached response in last 3 days
+async function getCachedResponse(controlSum) {
+  const threeDaysAgo = new Date();
+  threeDaysAgo.setDate(threeDaysAgo.getDate() - 3);
+  
+  const { data, error } = await supabase
+    .from('form_submissions')
+    .select('response')
+    .eq('control_sum', controlSum)
+    .gte('created_at', threeDaysAgo.toISOString())
+    .not('response', 'is', null)
+    .order('created_at', { ascending: false })
+    .limit(1);
+  
+  if (error) {
+    console.error('Error checking cached response:', error);
+    return null;
+  }
+  
+  return data.length > 0 ? data[0].response : null;
 }
 
 // Check daily request limit (global - 12 requests total per day)
@@ -44,7 +73,7 @@ async function checkDailyLimit() {
 }
 
 // Save form submission to database
-async function saveSubmission(formData, userIP) {
+async function saveSubmission(formData, userIP, controlSum, response = null) {
   const { error } = await supabase
     .from('form_submissions')
     .insert([{
@@ -53,9 +82,11 @@ async function saveSubmission(formData, userIP) {
       postal_code: formData.postalCode,
       political_connections: formData.politicalConnections,
       user_ip: userIP,
+      control_sum: controlSum,
+      response: response,
       created_at: new Date().toISOString()
     }]);
-  
+
   if (error) {
     console.error('Error saving submission:', error);
     throw new Error('Błąd zapisywania danych');
@@ -151,7 +182,24 @@ exports.handler = async (event, context) => {
       };
     }
     
-    // Check daily limit (global - 10 requests total per day)
+    // Generate control sum from user data
+    const controlSum = generateControlSum(sanitizedData);
+    
+    // Check for cached response in last 3 days
+    const cachedResponse = await getCachedResponse(controlSum);
+    if (cachedResponse) {
+      console.log('Returning cached response for control sum:', controlSum);
+      return {
+        statusCode: 200,
+        body: JSON.stringify({
+          success: true,
+          projectName: cachedResponse,
+          cached: true
+        })
+      };
+    }
+    
+    // Check daily limit (global - 12 requests total per day)
     const limitExceeded = await checkDailyLimit();
     if (limitExceeded) {
       return {
@@ -163,17 +211,18 @@ exports.handler = async (event, context) => {
       };
     }
     
-    // Save submission to database
-    await saveSubmission(sanitizedData, userIP);
-    
     // Generate project name using Perplexity AI
     const projectName = await generateProjectName(sanitizedData.rodzajDzialalnosci);
+    
+    // Save submission to database with response
+    await saveSubmission(sanitizedData, userIP, controlSum, projectName);
     
     return {
       statusCode: 200,
       body: JSON.stringify({
         success: true,
-        projectName: projectName
+        projectName: projectName,
+        cached: false
       })
     };
     
