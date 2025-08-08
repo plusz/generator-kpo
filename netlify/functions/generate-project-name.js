@@ -158,7 +158,7 @@ exports.handler = async (event, context) => {
         statusCode: 200,
         body: JSON.stringify({ 
           limitExceeded: true,
-          message: 'Przekroczono limit 10 żądań dziennie. Limit znika jak limity w KPO. Spróbuj ponownie jutro.\nA dzisiaj posłuchaj audiobajki z dzieckiem: https://www.zwierzetadetektywi.pl/audiobajki/'
+          message: 'Przekroczono limit 10 żądań dziennie. Limit znika jak limity w KPO. Spróbuj ponownie jutro.\nA dzisiaj posłuchaj audiobajki z dzieckiem:\n https://www.zwierzetadetektywi.pl/audiobajki/'
         })
       };
     }

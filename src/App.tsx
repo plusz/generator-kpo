@@ -90,7 +90,7 @@ function App() {
           </div>
 
           <div className="form-group">
-            <label htmlFor="pkdCode">Kod PKD:</label>
+            <label htmlFor="pkdCode">Grupa PKD:</label>
             <select
               id="pkdCode"
               name="pkdCode"
