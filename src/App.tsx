@@ -28,9 +28,26 @@ function App() {
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value, type } = e.target;
+    const checked = (e.target as HTMLInputElement).checked;
+
+    let processedValue = value;
+    
+    // Auto-format postal code: add dash after 2 digits
+    if (name === 'postalCode') {
+      // Remove any existing dashes first
+      const numbersOnly = value.replace(/-/g, '');
+      
+      // Add dash after 2 digits if we have more than 2 digits
+      if (numbersOnly.length > 2) {
+        processedValue = numbersOnly.slice(0, 2) + '-' + numbersOnly.slice(2, 5);
+      } else {
+        processedValue = numbersOnly;
+      }
+    }
+
     setFormData(prev => ({
       ...prev,
-      [name]: type === 'checkbox' ? (e.target as HTMLInputElement).checked : value
+      [name]: type === 'checkbox' ? checked : processedValue
     }));
   };
 

@@ -4,6 +4,7 @@ const crypto = require('crypto');
 const supabaseUrl = process.env.REACT_APP_SUPABASE_URL;
 const supabaseKey = process.env.REACT_APP_SUPABASE_ANON_KEY;
 const perplexityApiKey = process.env.PERPLEXITY_API_KEY;
+const promptTemplate = process.env.PERPLEXITY_PROMPT_TEMPLATE;
 
 const supabase = createClient(supabaseUrl, supabaseKey);
 
@@ -95,12 +96,13 @@ async function saveSubmission(formData, userIP, controlSum, response = null) {
 
 // Generate project name using Perplexity AI
 async function generateProjectName(rodzajDzialalnosci) {
-  const prompt = `Proszę wygeneruj profesjonalną i poważnie brzmiącą nazwę projektu modernizacji mojej działalności ${rodzajDzialalnosci}, która będzie skierowana na pozyskanie środków z Krajowego Planu Odbudowy (KPO). Nazwa powinna uwzględniać:
-podniesienie odporności firmy na ryzyka i kryzysy, wdrożenie ekologicznych i energooszczędnych rozwiązań,
-innowacje i cyfrową transformację, zgodność z kluczowymi priorytetami KPO, poprawę efektywności i jakości usług lub produktów,
-Nazwa projektu ma zaczynać się od frazy „Transformacja działalności poprzez rozwój i zakup..." i mieć formę rozbudowanego, wielolinijkowego sformułowania (minimum 6 linijek). Proszę o profesjonalny i korporacyjny styl.
-Nie dodawaj cytatów, ani innych tekstów poza nazwą projektu. W nazwie uwzględnij rodzaj działalności i kod PKD.
-Na koniec dodaj coś zabawnego o koneksjach politycznych, jachtach, ekspresach do kawy w kontekście dotacji z budetu Państwa w odniesieni do {rodzajDzialalnosci}.`;
+  if (!promptTemplate) {
+    throw new Error('PERPLEXITY_PROMPT_TEMPLATE environment variable is not configured');
+  }
+  
+  const prompt = promptTemplate
+    .replace(/\\n/g, '\n') // Convert \n strings to actual line breaks
+    .replace(/{rodzajDzialalnosci}/g, rodzajDzialalnosci); // Replace all occurrences
 
   try {
     const response = await fetch('https://api.perplexity.ai/chat/completions', {
