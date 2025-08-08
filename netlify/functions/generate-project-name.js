@@ -79,7 +79,7 @@ Na koniec dodaj coś zabawnego o koneksjach politycznych, jachtach, ekspresach d
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        model: 'sonar-pro',
+        model: 'sonar',
         messages: [
           {
             role: 'user',
