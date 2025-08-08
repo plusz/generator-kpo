@@ -16,9 +16,15 @@ function App() {
     postalCode: '',
     politicalConnections: false,
   });
-  const [isLoading, setIsLoading] = useState(false);
-  const [result, setResult] = useState<string>('');
   const [error, setError] = useState<string>('');
+  const [result, setResult] = useState<string>('');
+  const [isLoading, setIsLoading] = useState<boolean>(false);
+
+  // Helper function to convert URLs in text to clickable links
+  const convertLinksToHTML = (text: string): string => {
+    const urlRegex = /(https?:\/\/[^\s]+)/g;
+    return text.replace(urlRegex, '<a href="$1" target="_blank" rel="noopener noreferrer">$1</a>');
+  };
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value, type } = e.target;
@@ -50,7 +56,7 @@ function App() {
       }
 
       if (data.limitExceeded) {
-        setError('Przekroczono limit 10 żądań dziennie. Spróbuj ponownie jutro.');
+        setError(data.message || 'Przekroczono limit 10 żądań dziennie. Spróbuj ponownie jutro.');
       } else {
         setResult(data.projectName);
       }
@@ -135,7 +141,7 @@ function App() {
         {error && (
           <div className="error-message">
             <h3>Błąd:</h3>
-            <p>{error}</p>
+            <p dangerouslySetInnerHTML={{ __html: convertLinksToHTML(error.replace(/\n/g, '<br>')) }}></p>
           </div>
         )}
 
