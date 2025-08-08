@@ -19,11 +19,24 @@ function App() {
   const [error, setError] = useState<string>('');
   const [result, setResult] = useState<string>('');
   const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [copySuccess, setCopySuccess] = useState<boolean>(false);
 
   // Helper function to convert URLs in text to clickable links
   const convertLinksToHTML = (text: string): string => {
     const urlRegex = /(https?:\/\/[^\s]+)/g;
     return text.replace(urlRegex, '<a href="$1" target="_blank" rel="noopener noreferrer">$1</a>');
+  };
+
+  // Function to copy project name to clipboard
+  const copyToClipboard = async () => {
+    try {
+      await navigator.clipboard.writeText(result);
+      setCopySuccess(true);
+      // Reset the success message after 2 seconds
+      setTimeout(() => setCopySuccess(false), 2000);
+    } catch (err) {
+      console.error('Failed to copy text: ', err);
+    }
   };
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
@@ -164,12 +177,26 @@ function App() {
 
         {result && (
           <div className="result">
-            <h3>Wygenerowana nazwa projektu:</h3>
+            <div className="result-header">
+              <h3>Wygenerowana nazwa projektu:</h3>
+              <button 
+                className="copy-button" 
+                onClick={copyToClipboard}
+                title="Skopiuj do schowka"
+              >
+                📋
+              </button>
+            </div>
             <div className="project-name">
               {result.split('\n').map((line, index) => (
                 <p key={index}>{line}</p>
               ))}
             </div>
+            {copySuccess && (
+              <div className="copy-success">
+                ✅ Skopiowano do schowka!
+              </div>
+            )}
           </div>
         )}
       </div>
