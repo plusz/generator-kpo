@@ -25,7 +25,7 @@ function getClientIP(event) {
          'unknown';
 }
 
-// Check daily request limit (global - 10 requests total per day)
+// Check daily request limit (global - 12 requests total per day)
 async function checkDailyLimit() {
   const today = new Date().toISOString().split('T')[0];
   
@@ -40,7 +40,7 @@ async function checkDailyLimit() {
     throw new Error('Błąd sprawdzania limitu żądań');
   }
   
-  return data.length >= 10;
+  return data.length >= 12;
 }
 
 // Save form submission to database
