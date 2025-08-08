@@ -1,4 +1,54 @@
-# Getting Started with Create React App
+# KPO Project Name Generator
+
+A React application that generates professional project names for Polish KPO (Krajowy Plan Odbudowy) funding applications using Perplexity AI.
+
+## Features
+
+- Form with 4 fields: business type, PKD code, postal code, and political connections checkbox
+- Data sanitization and validation
+- Rate limiting (10 requests per day per IP)
+- Integration with Supabase for data storage
+- AI-powered project name generation using Perplexity API
+- Modern, responsive UI with smooth animations
+
+## Tech Stack
+
+- **Frontend**: React with TypeScript
+- **Backend**: Netlify Functions
+- **Database**: Supabase
+- **AI**: Perplexity LLM API
+- **Deployment**: Netlify
+
+## Setup Instructions
+
+### 1. Environment Variables
+
+Create a `.env` file in the root directory with the following variables:
+
+```
+REACT_APP_SUPABASE_URL=your_supabase_project_url
+REACT_APP_SUPABASE_ANON_KEY=your_supabase_anon_key
+PERPLEXITY_API_KEY=your_perplexity_api_key
+```
+
+### 2. Supabase Setup
+
+1. Create a new Supabase project
+2. Run the SQL commands from `supabase-schema.sql` in your Supabase SQL editor
+3. Update your `.env` file with the Supabase URL and anon key
+
+### 3. Perplexity API Setup
+
+1. Sign up for a Perplexity API account
+2. Get your API key and add it to the `.env` file
+
+### 4. Install Dependencies
+
+```bash
+npm install
+```
+
+### 5. Development
 
 This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
 
